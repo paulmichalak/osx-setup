@@ -1,0 +1,114 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Install homebrew
+      include_role:
+        name: geerlingguy.mac.homebrew
+
+    - name: Make sure homebrew bin is in path
+      ansible.builtin.lineinfile:
+        path: /etc/paths
+        state: present
+        line: "/opt/homebrew/bin"
+      become: true
+      become_user: root
+
+    - name: "add custom homebrew repos"
+      community.general.homebrew_tap:
+        name: [homebrew/cask-versions, homebrew/cask-fonts]
+
+    - name: Install core packages via brew casks
+      community.general.homebrew_cask:
+        name: "{{ item }}"
+      ignore_errors: yes
+      with_items:
+        - 1password
+        - figma
+        - google-chrome
+        - iterm2
+        - ngrok
+        - signal
+        - slack
+        - visual-studio-code
+        - zoom
+        - tower
+        - font-fira-code
+
+    - name: "Install homebrew packages"
+      community.general.homebrew:
+        name: ["nvm", "fzf", "yarn", "zsh"]
+        state: present
+        update_homebrew: yes
+
+    - name: "Install from Mac app store"
+      shell: mas install {{ item }}
+      with_items:
+        - 497799835 # xcode
+
+    - name: Get the path to ZSH
+      become: false
+      local_action: command which zsh
+      register: zsh_path
+
+    - name: "Ensure homebrew zsh is in allowed shells"
+      lineinfile:
+        path: /etc/shells
+        line: "{{ zsh_path.stdout }}"
+      become: true
+
+    - name: Install Oh My ZSH
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+      args:
+        creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
+
+    - name: Set ZSH as the default shell
+      shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
+      become: true
+
+    - name: "Create a default ZSH configuration"
+      template:
+        src: templates/.zshrc.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/.zshrc
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
+
+    # Add something which ensures path is set here
+    - name: Install VSCode extensions
+      shell: code --install-extension {{ item }}
+      with_items:
+        - apollographql.vscode-apollo
+        - mlewand.select-part-of-word
+        - eamodio.gitlens
+        - ms-vscode.vscode-typescript-tslint-plugin
+        - stkb.rewrap
+        - esbenp.prettier-vscode
+        - cardinal90.multi-cursor-case-preserve
+        - graphql.vscode-graphql
+        - waderyan.gitblame
+        - dbaeumer.vscode-eslint
+        - usernamehw.errorlens
+        - naumovs.color-highlight
+
+    - name: Install yarn packages
+      shell: yarn global add {{ item }}
+      with_items:
+        - react-native-cli
+        - create-react-app
+        - apollo
+
+    - name: Set preferences
+      with_items:
+        - defaults -currentHost write "Apple Global Domain" "NSNavPanelExpandedStateForSaveMode" -bool true
+        - defaults -currentHost write "Apple Global Domain" "PMPrintingExpandedStateForPrint" -bool true
+        - defaults -currentHost write "com.apple.Spotlight" "MenuItemHidden" -bool true
+        - defaults -currentHost write "com.apple.screensaver" "idleTime" -int 120
+        - defaults write "Apple Global Domain" "AppleShowAllExtensions" -bool true
+        - defaults write "com.apple.dock" "autohide" -bool true
+        - defaults write "com.apple.dock" "largesize" -int 55
+        - defaults write "com.apple.dock" "magnification" -bool true
+        - defaults write "com.apple.dock" "mru-spaces" -bool false
+        - defaults write "com.apple.dock" "orientation" -string "right"
+        - defaults write "com.apple.dock" "persistent-apps" -array
+        - defaults write "com.apple.dock" "recent-apps" -array
+        - defaults write "com.apple.dock" "tilesize" -int 38
+      shell: "{{ item }}"

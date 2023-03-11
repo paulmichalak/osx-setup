@@ -1,5 +1,12 @@
 ---
 - hosts: localhost
+  
+  pre_tasks:
+    - name: Upgrade
+      community.general.homebrew:
+        update_homebrew: true
+        upgrade_all: true
+
   tasks:
     - name: Install homebrew
       include_role:
@@ -17,6 +24,15 @@
       community.general.homebrew_tap:
         name: [homebrew/cask-versions, homebrew/cask-fonts]
 
+    - name: "Install homebrew packages"
+      community.general.homebrew:
+        name: 
+          - "nvm"
+          - "fzf"
+          - "yarn"
+          - "zsh"
+        state: latest
+
     - name: Install core packages via brew casks
       community.general.homebrew_cask:
         name: "{{ item }}"
@@ -25,7 +41,7 @@
         - 1password
         - figma
         - google-chrome
-        - iterm2
+        - warp
         - ngrok
         - signal
         - slack
@@ -33,17 +49,6 @@
         - zoom
         - tower
         - font-fira-code
-
-    - name: "Install homebrew packages"
-      community.general.homebrew:
-        name: ["nvm", "fzf", "yarn", "zsh"]
-        state: present
-        update_homebrew: yes
-
-    - name: "Install from Mac app store"
-      shell: mas install {{ item }}
-      with_items:
-        - 497799835 # xcode
 
     - name: Get the path to ZSH
       become: false
@@ -89,13 +94,6 @@
         - usernamehw.errorlens
         - naumovs.color-highlight
 
-    - name: Install yarn packages
-      shell: yarn global add {{ item }}
-      with_items:
-        - react-native-cli
-        - create-react-app
-        - apollo
-
     - name: Set preferences
       with_items:
         - defaults -currentHost write "Apple Global Domain" "NSNavPanelExpandedStateForSaveMode" -bool true
@@ -112,3 +110,11 @@
         - defaults write "com.apple.dock" "recent-apps" -array
         - defaults write "com.apple.dock" "tilesize" -int 38
       shell: "{{ item }}"
+
+    - name: Install yarn packages
+      shell: yarn global add {{ item }}
+      with_items:
+        - react-native-cli
+        - create-react-app
+        - expo-cli
+

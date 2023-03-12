@@ -8,6 +8,23 @@
         upgrade_all: true
 
   tasks:
+    - name: Set preferences
+      with_items:
+        - defaults -currentHost write "Apple Global Domain" "NSNavPanelExpandedStateForSaveMode" -bool true
+        - defaults -currentHost write "Apple Global Domain" "PMPrintingExpandedStateForPrint" -bool true
+        - defaults -currentHost write "com.apple.Spotlight" "MenuItemHidden" -bool true
+        - defaults -currentHost write "com.apple.screensaver" "idleTime" -int 120
+        - defaults write "Apple Global Domain" "AppleShowAllExtensions" -bool true
+        - defaults write "com.apple.dock" "autohide" -bool true
+        - defaults write "com.apple.dock" "largesize" -int 55
+        - defaults write "com.apple.dock" "magnification" -bool true
+        - defaults write "com.apple.dock" "mru-spaces" -bool false
+        - defaults write "com.apple.dock" "orientation" -string "right"
+        - defaults write "com.apple.dock" "persistent-apps" -array
+        - defaults write "com.apple.dock" "recent-apps" -array
+        - defaults write "com.apple.dock" "tilesize" -int 38
+      shell: "{{ item }}"
+
     - name: Install homebrew
       include_role:
         name: geerlingguy.mac.homebrew
@@ -102,23 +119,6 @@
     #     - dbaeumer.vscode-eslint
     #     - usernamehw.errorlens
     #     - naumovs.color-highlight
-
-    - name: Set preferences
-      with_items:
-        - defaults -currentHost write "Apple Global Domain" "NSNavPanelExpandedStateForSaveMode" -bool true
-        - defaults -currentHost write "Apple Global Domain" "PMPrintingExpandedStateForPrint" -bool true
-        - defaults -currentHost write "com.apple.Spotlight" "MenuItemHidden" -bool true
-        - defaults -currentHost write "com.apple.screensaver" "idleTime" -int 120
-        - defaults write "Apple Global Domain" "AppleShowAllExtensions" -bool true
-        - defaults write "com.apple.dock" "autohide" -bool true
-        - defaults write "com.apple.dock" "largesize" -int 55
-        - defaults write "com.apple.dock" "magnification" -bool true
-        - defaults write "com.apple.dock" "mru-spaces" -bool false
-        - defaults write "com.apple.dock" "orientation" -string "right"
-        - defaults write "com.apple.dock" "persistent-apps" -array
-        - defaults write "com.apple.dock" "recent-apps" -array
-        - defaults write "com.apple.dock" "tilesize" -int 38
-      shell: "{{ item }}"
 
     - name: Install yarn packages
       shell: yarn global add {{ item }}

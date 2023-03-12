@@ -1,6 +1,6 @@
 ---
 - hosts: localhost
-  
+
   pre_tasks:
     - name: Upgrade
       community.general.homebrew:
@@ -26,11 +26,12 @@
 
     - name: "Install homebrew packages"
       community.general.homebrew:
-        name: 
+        name:
           - "nvm"
           - "fzf"
           - "yarn"
           - "zsh"
+          - "mas"
         state: latest
 
     - name: Install core packages via brew casks
@@ -45,10 +46,17 @@
         - ngrok
         - signal
         - slack
+        - spotify
         - visual-studio-code
         - zoom
         - tower
         - font-fira-code
+
+    - name: "Install from Mac app store"
+      shell: mas install {{ item }}
+      with_items:
+        - 497799835 # Xcode
+        - 1091189122 # Bear notes
 
     - name: Get the path to ZSH
       become: false
@@ -77,22 +85,23 @@
         owner: "{{ lookup('env', 'USER') }}"
         force: yes
 
-    # Add something which ensures path is set here
-    - name: Install VSCode extensions
-      shell: code --install-extension {{ item }}
-      with_items:
-        - apollographql.vscode-apollo
-        - mlewand.select-part-of-word
-        - eamodio.gitlens
-        - ms-vscode.vscode-typescript-tslint-plugin
-        - stkb.rewrap
-        - esbenp.prettier-vscode
-        - cardinal90.multi-cursor-case-preserve
-        - graphql.vscode-graphql
-        - waderyan.gitblame
-        - dbaeumer.vscode-eslint
-        - usernamehw.errorlens
-        - naumovs.color-highlight
+    # # VS Code now syncs extension to your account linked to your github
+    # # Add something which ensures path is set here
+    # - name: Install VSCode extensions
+    #   shell: code --install-extension {{ item }}
+    #   with_items:
+    #     - apollographql.vscode-apollo
+    #     - mlewand.select-part-of-word
+    #     - eamodio.gitlens
+    #     - ms-vscode.vscode-typescript-tslint-plugin
+    #     - stkb.rewrap
+    #     - esbenp.prettier-vscode
+    #     - cardinal90.multi-cursor-case-preserve
+    #     - graphql.vscode-graphql
+    #     - waderyan.gitblame
+    #     - dbaeumer.vscode-eslint
+    #     - usernamehw.errorlens
+    #     - naumovs.color-highlight
 
     - name: Set preferences
       with_items:
@@ -117,4 +126,3 @@
         - react-native-cli
         - create-react-app
         - expo-cli
-
